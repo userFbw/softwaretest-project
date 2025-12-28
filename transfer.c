@@ -1,5 +1,15 @@
 #include "transfer.h"
 
+// 桩模块：根据输入的 ID 模拟不同的查找结果
+int find_user_by_id(int id) {
+    if (id == 99) return -1;  // 场景：模拟用户不存在
+    if (id == 1)   return 0;   // 场景：返回 FromUser 的索引
+    if (id == 2)   return 1;   // 场景：返回 ToUser 的索引
+    if (id == 3)   return 2;   // 场景：返回 FrozenUser 的索引
+    if (id == 4)   return 3;   // 场景：返回 LockedUser 的索引
+    return -1;
+}
+
 int transfer_money(int from_user_id, int to_user_id, double amount) {
 	
     // 1. 检查双方用户是否存在
@@ -165,81 +175,41 @@ void test_transfer_money() {
         to->status = ACCOUNT_ACTIVE; \
     printf("\n--- 账户余额/状态已重置：From: %.2f, To: %.2f ---\n");
 
-    printf("\n------------ 数据流测试 ------------\n");
-   
-    printf("\n全定义测试\n");
+    printf("\n------------ 集成测试 ------------\n");
+
 
     RESET_ACCOUNT_STATUS
     result = transfer_money(FROM_ID, TO_ID, 25000); 
     printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
-
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROZEN_ID, FROZEN_ID, 25000); 
-    printf("测试用例:2,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
-
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(LOCKED_ID, LOCKED_ID, 25000); 
-    printf("测试用例:3,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
-
-
-
-    printf("\n全计算使用测试\n");
-
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROM_ID, TO_ID, 25000); 
-    printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
- 
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROZEN_ID, FROZEN_ID, 25000); 
-    printf("测试用例:2,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
-
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(LOCKED_ID, LOCKED_ID, 25000); 
-    printf("测试用例:3,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
 
     RESET_ACCOUNT_STATUS
     result = transfer_money(NON_EXISTENT_ID, TO_ID, 25000); 
-    printf("测试用例:4,期望:-1 | 结果 %d, From余额 %.2f\n", result, from->balance);
-
-
-
-    printf("\n全谓词使用测试\n");
-
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROZEN_ID, TO_ID, 25000); 
-    printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
-
-
-
-    printf("\n全使用测试\n");
-   
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROZEN_ID, TO_ID, 25000); 
-    printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
- 
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROZEN_ID, FROZEN_ID, 25000); 
     printf("测试用例:2,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
 
     RESET_ACCOUNT_STATUS
-    result = transfer_money(LOCKED_ID, LOCKED_ID, 25000); 
-    printf("测试用例:3,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
-   
-
-
-    printf("\n全定义-使用测试\n");
-
-    RESET_ACCOUNT_STATUS
     result = transfer_money(FROZEN_ID, TO_ID, 25000); 
-    printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
- 
-       RESET_ACCOUNT_STATUS
-    result = transfer_money(FROZEN_ID, FROZEN_ID, 25000); 
-    printf("测试用例:2,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+    printf("测试用例:3,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
 
     RESET_ACCOUNT_STATUS
-    result = transfer_money(LOCKED_ID, LOCKED_ID, 25000); 
-    printf("测试用例:3,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+    result = transfer_money(LOCKED_ID, TO_ID, 25000); 
+    printf("测试用例:4,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+ 
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(FROM_ID, TO_ID, 50); 
+    printf("测试用例:5,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(FROM_ID, TO_ID, 60000); 
+    printf("测试用例:6,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(FROM_ID, TO_ID, 30000); 
+    printf("测试用例:7,期望:-1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+
+    RESET_ACCOUNT_STATUS
+    transaction_count = 1000;
+    result = transfer_money(FROM_ID, TO_ID, 25000); 
+    printf("测试用例:8,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
    
     printf("\n=====================================\n");
     #undef RESET_ACCOUNT_STATUS
