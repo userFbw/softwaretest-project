@@ -1,4 +1,7 @@
 #include "register.h"
+#include <stdio.h>  
+#include <assert.h>
+#include <string.h> 
 int register_user(const char* username, const char* password, const char* confirm_password) {
     if (username == NULL || password == NULL || confirm_password == NULL) {
         printf("用户名、密码或确认密码不能为空\n");
@@ -124,14 +127,17 @@ void test_register_user() {
     printf("测试用例6（密码无数字）执行通过 | 输入：username=\"valid_user\", password=\"Abcdefgh\", confirm_password=\"Abcdefgh\" | 预期返回-1，实际返回%d\n", ret);
 
     // 测试用例7：用户数量达上限 - 覆盖 TCOVER13（user_count定义→46行P-use）（假设MAX_USERS=2）
-    init_test_env(); // 重置环境，重新计数
-    // 先注册2个合法用户（达到MAX_USERS上限）
-    register_user("user1", "Test123456", "Test123456"); 
-    register_user("user2", "Test123456", "Test123456"); 
-    // 注册第3个用户，触发数量上限
-    ret = register_user("user3", "Test123456", "Test123456");
-    assert(ret == -1); // 预期返回-1
-    printf("测试用例7（用户数量达上限）执行通过 | 输入：username=\"user3\", password=\"Test123456\", confirm_password=\"Test123456\" | 预期返回-1，实际返回%d\n", ret);
+  init_test_env(); // 重置环境，重新计数
+// 先注册5个合法用户（达到MAX_USERS上限）
+for (int i = 0; i < MAX_USERS; i++) {
+    char username[20];
+    sprintf(username, "user%d", i);
+    register_user(username, "Test123456", "Test123456");
+}
+// 注册第6个用户，触发数量上限
+ret = register_user("user6", "Test123456", "Test123456");
+assert(ret == -1); // 预期返回-1
+printf("测试用例7（用户数量达上限）执行通过 | 输入：username=\"user6\", password=\"Test123456\", confirm_password=\"Test123456\" | 预期返回-1，实际返回%d\n", ret);
 
     printf("===================== 全定义测试完成：所有变量定义均覆盖至少一条使用路径 =====================\n\n");
 
