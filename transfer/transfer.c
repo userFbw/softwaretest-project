@@ -14,8 +14,8 @@ int transfer_money(int from_user_id, int to_user_id, double amount) {
     // 2. 检查账户状态
     User* user1 = &users[Fid];
     User* user2 = &users[Tid];
-    const char* status_str1 = "未知";
-    const char* status_str2 = "未知";
+    const char* status_str1;
+    const char* status_str2;
  	switch (user1->status) 
 	{
 	 case ACCOUNT_ACTIVE: status_str1 = "正常"; break;
@@ -24,7 +24,7 @@ int transfer_money(int from_user_id, int to_user_id, double amount) {
 	}
 	 switch (user2->status) 
 	{
-	 case ACCOUNT_ACTIVE: status_str2 = "正常"; break; 
+	 case ACCOUNT_ACTIVE: status_str2 = "正常"; break;
 	 case ACCOUNT_FROZEN: status_str2 = "冻结"; break;
 	 case ACCOUNT_LOCKED: status_str2 = "锁定"; break;
 	}
@@ -163,68 +163,84 @@ void test_transfer_money() {
         from->status = ACCOUNT_ACTIVE; \
         to->balance = 0.0; \
         to->status = ACCOUNT_ACTIVE; \
-    printf("--- 账户余额/状态已重置：From: %.2f, To: %.2f ---\n");
+    printf("\n--- 账户余额/状态已重置：From: %.2f, To: %.2f ---\n");
 
-    printf("\n--- 路径测试 ---\n");
+    printf("\n------------ 数据流测试 ------------\n");
+   
+    printf("\n全定义测试\n");
 
-    //1.正常
     RESET_ACCOUNT_STATUS
     result = transfer_money(FROM_ID, TO_ID, 25000); 
-    printf("c1:F1 ,c2:T1 ,c3:SF1 ,c4:ST1 ,c5:M1 ,c6:B1 ,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+    printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
 
-    //2.转出账户不存在
     RESET_ACCOUNT_STATUS
-    result = transfer_money(NON_EXISTENT_ID, TO_ID, 25000);
-    printf("c1: F2,c2:- ,c3:- ,c4:- ,c5:- ,c6:- ,期望:-1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+    result = transfer_money(FROZEN_ID, FROZEN_ID, 25000); 
+    printf("测试用例:2,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
 
-    //3.转入账户不存在
     RESET_ACCOUNT_STATUS
-    result = transfer_money(FROM_ID, NON_EXISTENT_ID, 25000);
-    printf("c1:F1 ,c2:F2 ,c3-: ,c4:- ,c5:- ,c6:- ,期望:-1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+    result = transfer_money(LOCKED_ID, LOCKED_ID, 25000); 
+    printf("测试用例:3,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
 
-    //4.转出账户异常（冻结）
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROZEN_ID, TO_ID, 25000);
-    printf("c1:F1 ,c2:T1 ,c3:SF2 ,c4:- ,c5:- ,c6:- ,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
 
-    //5.转出账户异常（锁定）
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(LOCKED_ID, TO_ID, 25000);
-    printf("c1:F1 ,c2:T1 ,c3:SF3 ,c4:- ,c5:- ,c6:- ,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
 
-    //6.转入账户异常（冻结）
+    printf("\n全计算使用测试\n");
+
     RESET_ACCOUNT_STATUS
-    result = transfer_money(FROM_ID, FROZEN_ID, 25000); 
-    printf("c1:F1 ,c2:T1 ,c3:SF1 ,c4:ST2 ,c5:- ,c6:- ,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
-    
-    //7.转入账户异常（锁定）
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROM_ID, LOCKED_ID, 25000);
-    printf("c1:F1 ,c2:T1 ,c3:SF1 ,c4:ST3 ,c5:- ,c6:- ,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
-    
-    //8.金额无效
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROM_ID, TO_ID, 99); 
-    printf("c1:F1 ,c2:T1 ,c3:SF1 ,c4:ST1 ,c5:M2 ,c6:- ,期望:-3 | 结果 %d, From余额 %.2f\n", result, from->balance);
-    
-    //9.金额无效
-    RESET_ACCOUNT_STATUS
-    result = transfer_money(FROM_ID, TO_ID, 50001); 
-    printf("c1:F1 ,c2:T1 ,c3:SF1 ,c4:ST1 ,c5:M3 ,c6:- ,期望:-3 | 结果 %d, From余额 %.2f\n", result, from->balance);
-    
-    //10.账户余额不足
-    RESET_ACCOUNT_STATUS
-    from->balance=0;
-    result = transfer_money(FROM_ID, TO_ID, 25000);
-    printf("c1:F1 ,c2:T1 ,c3:SF1 ,c4:ST1 ,c5:M1 ,c6:B2 ,期望:-4 | 结果 %d, From余额 %.2f\n", result, from->balance);
-    
-    //11.超出记录
-    RESET_ACCOUNT_STATUS
-    transaction_count = 1000;
     result = transfer_money(FROM_ID, TO_ID, 25000); 
-    printf("c1:F1 ,c2:T1 ,c3:SF1 ,c4:ST1 ,c5:M1 ,c6:B1 ,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+    printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+ 
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(FROZEN_ID, FROZEN_ID, 25000); 
+    printf("测试用例:2,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(LOCKED_ID, LOCKED_ID, 25000); 
+    printf("测试用例:3,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(NON_EXISTENT_ID, TO_ID, 25000); 
+    printf("测试用例:4,期望:-1 | 结果 %d, From余额 %.2f\n", result, from->balance);
 
 
+
+    printf("\n全谓词使用测试\n");
+
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(FROZEN_ID, TO_ID, 25000); 
+    printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+
+
+
+    printf("\n全使用测试\n");
+   
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(FROZEN_ID, TO_ID, 25000); 
+    printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+ 
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(FROZEN_ID, FROZEN_ID, 25000); 
+    printf("测试用例:2,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(LOCKED_ID, LOCKED_ID, 25000); 
+    printf("测试用例:3,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+   
+
+
+    printf("\n全定义-使用测试\n");
+
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(FROZEN_ID, TO_ID, 25000); 
+    printf("测试用例:1,期望:1 | 结果 %d, From余额 %.2f\n", result, from->balance);
+ 
+       RESET_ACCOUNT_STATUS
+    result = transfer_money(FROZEN_ID, FROZEN_ID, 25000); 
+    printf("测试用例:2,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+
+    RESET_ACCOUNT_STATUS
+    result = transfer_money(LOCKED_ID, LOCKED_ID, 25000); 
+    printf("测试用例:3,期望:-2 | 结果 %d, From余额 %.2f\n", result, from->balance);
+   
     printf("\n=====================================\n");
     #undef RESET_ACCOUNT_STATUS
 }
